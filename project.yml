@@ -1,0 +1,91 @@
+name: AndroidFileTransfer
+options:
+  bundleIdPrefix: com.cbrill.mtpfinder
+  deploymentTarget:
+    macOS: "13.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    DEVELOPMENT_TEAM: 4FMS9MCK4C
+    CODE_SIGN_STYLE: Automatic
+    MARKETING_VERSION: "0.1"
+    CURRENT_PROJECT_VERSION: "1"
+packages:
+  MTPPackage:
+    path: .
+targets:
+  MTPFinder:
+    type: application
+    platform: macOS
+    sources: [App]
+    info:
+      path: App/Info.plist
+      properties:
+        LSUIElement: true
+        CFBundleDisplayName: MTP Finder
+    entitlements:
+      path: App/App.entitlements
+      properties:
+        com.apple.security.application-groups: ["4FMS9MCK4C.com.cbrill.mtpfinder"]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.cbrill.mtpfinder
+        ENABLE_HARDENED_RUNTIME: NO
+    dependencies:
+      - package: MTPPackage
+        product: MTPShared
+      - target: FileProviderExt
+        embed: true
+        codeSign: true
+      - target: MTPHelper
+        embed: true
+        codeSign: true
+        copy:
+          destination: executables
+    postBuildScripts:
+      - name: Embed libmtp
+        script: '"$SRCROOT/Scripts/embed-libs.sh"'
+        basedOnDependencyAnalysis: false
+  FileProviderExt:
+    type: app-extension
+    platform: macOS
+    sources: [Extension]
+    info:
+      path: Extension/Info.plist
+      properties:
+        CFBundleDisplayName: MTP Provider
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.fileprovider-nonui
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).FileProviderExtension
+          NSExtensionFileProviderSupportsEnumeration: true
+    entitlements:
+      path: Extension/Extension.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.application-groups: ["4FMS9MCK4C.com.cbrill.mtpfinder"]
+        com.apple.security.temporary-exception.mach-lookup.global-name: ["4FMS9MCK4C.com.cbrill.mtpfinder.helper"]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.cbrill.mtpfinder.provider
+        ENABLE_HARDENED_RUNTIME: NO
+    dependencies:
+      - package: MTPPackage
+        product: MTPShared
+  MTPHelper:
+    type: tool
+    platform: macOS
+    sources:
+      - path: Helper
+        excludes: ['*.entitlements']
+    entitlements:
+      path: Helper/Helper.entitlements
+      properties:
+        com.apple.security.application-groups: ["4FMS9MCK4C.com.cbrill.mtpfinder"]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.cbrill.mtpfinder.helper
+        ENABLE_HARDENED_RUNTIME: NO
+        LD_RUNPATH_SEARCH_PATHS: "@executable_path/../Frameworks"
+    dependencies:
+      - package: MTPPackage
+        product: MTPKit

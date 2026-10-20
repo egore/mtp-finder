@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.cbrill.mtpfinder.helper</string>
+    <key>BundleProgram</key>
+    <string>Contents/MacOS/MTPHelper</string>
+    <key>MachServices</key>
+    <dict>
+        <key>4FMS9MCK4C.com.cbrill.mtpfinder.helper</key>
+        <true/>
+    </dict>
+    <key>KeepAlive</key>
+    <true/>
+</dict>
+</plist>
