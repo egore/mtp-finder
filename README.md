@@ -22,7 +22,7 @@ do that, hence the split.
 | `Helper/` | `MTPHelper` launch agent, USB hotplug watcher |
 | `Extension/` | File Provider extension |
 | `App/` | Menu-bar app, registers helper and domains |
-| `Scripts/` | Library embedding |
+| `Scripts/` | Library embedding, icon generator (`swift Scripts/make-icon.swift`) |
 
 ## Requirements
 
@@ -81,6 +81,14 @@ First launch:
   Required after changing item metadata, as macOS caches it.
 - A locked phone yields an empty or failing folder. Unlock and reopen.
 - Opening Android File Transfer.app at the same time conflicts.
+
+## Icons
+
+- App icon: `App/Assets.xcassets`, rendered by `Scripts/make-icon.swift`.
+- Finder sidebar icon: SF Symbol `iphone.gen3`, set through
+  `CFBundleSymbolName` in the extension's Info.plist (`project.yml`).
+  Finder accepts only SF Symbol names there. Run the `--reset` command
+  below to refresh a cached icon.
 
 ## Change identity
 
