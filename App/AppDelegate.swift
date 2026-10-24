@@ -22,6 +22,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem?.button?.image = NSImage(systemSymbolName: "iphone.gen3", accessibilityDescription: "MTP")
         rebuildMenu()
 
+        let workspace = NSWorkspace.shared.notificationCenter
+        for name in [NSWorkspace.didLaunchApplicationNotification, NSWorkspace.didTerminateApplicationNotification] {
+            workspace.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                self?.rebuildMenu()
+            }
+        }
+
         client.onDevicesChanged = { [weak self] in
             Task { await self?.sync() }
         }
@@ -84,8 +91,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    private func conflictingApps() -> [String] {
+        NSWorkspace.shared.runningApplications
+            .compactMap(\.localizedName)
+            .filter(MTPService.conflictingProcesses.contains)
+    }
+
     private func rebuildMenu() {
         let menu = NSMenu()
+        let conflicts = Set(conflictingApps()).sorted()
+        if !conflicts.isEmpty {
+            menu.addItem(withTitle: "⚠︎ \(conflicts.joined(separator: ", ")) is running", action: nil, keyEquivalent: "")
+            menu.addItem(withTitle: "Quit it, only one program can use the phone", action: nil, keyEquivalent: "")
+            menu.addItem(.separator())
+        }
         if devices.isEmpty {
             menu.addItem(withTitle: "No devices", action: nil, keyEquivalent: "")
         }
