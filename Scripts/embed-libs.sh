@@ -11,7 +11,19 @@ MTP="$BREW/opt/libmtp/lib/libmtp.9.dylib"
 USB="$BREW/opt/libusb/lib/libusb-1.0.0.dylib"
 
 mkdir -p "$APP/Contents/Library/LaunchAgents" "$FRAMEWORKS"
-cp -f "$SRCROOT/Resources/com.cbrill.mtpfinder.helper.plist" "$APP/Contents/Library/LaunchAgents/"
+
+if [ -z "${DEVELOPMENT_TEAM:-}" ]; then
+    echo "error: DEVELOPMENT_TEAM is empty. Create Config/Local.xcconfig (see README)." >&2
+    exit 1
+fi
+
+PLIST="com.cbrill.mtpfinder.helper.plist"
+sed "s/__TEAM_ID__/$DEVELOPMENT_TEAM/" "$SRCROOT/Resources/$PLIST" > "$APP/Contents/Library/LaunchAgents/$PLIST"
+
+# codesign does not expand build settings in entitlements, Xcode only does for its own signing.
+ENTITLEMENTS="$TEMP_DIR/Helper.expanded.entitlements"
+sed "s/\$(TeamIdentifierPrefix)/$DEVELOPMENT_TEAM./" "$SRCROOT/Helper/Helper.entitlements" > "$ENTITLEMENTS"
+
 cp -f "$MTP" "$USB" "$FRAMEWORKS/"
 chmod u+w "$FRAMEWORKS"/*.dylib
 
@@ -31,4 +43,4 @@ for lib in "$FRAMEWORKS"/*.dylib; do
     codesign --force --sign "$EXPANDED_CODE_SIGN_IDENTITY" "$lib"
 done
 codesign --force --sign "$EXPANDED_CODE_SIGN_IDENTITY" \
-    --entitlements "$SRCROOT/Helper/Helper.entitlements" "$HELPER"
+    --entitlements "$ENTITLEMENTS" "$HELPER"

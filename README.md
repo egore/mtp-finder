@@ -27,8 +27,26 @@ do that, hence the split.
 ## Requirements
 
 - macOS 13+, Xcode
-- Apple Development signing identity (team set in `project.yml`)
+- An Apple Development signing identity (Xcode > Settings > Accounts)
 - `brew install libmtp xcodegen`
+
+## Prepare
+
+The Apple team ID is not stored in the repo. Create the git-ignored
+`Config/Local.xcconfig` with yours:
+
+```sh
+cp Config/Local.xcconfig.example Config/Local.xcconfig
+```
+
+and replace `XXXXXXXXXX` with your team ID. To look it up, run
+
+```sh
+security find-certificate -c "Apple Development" -p | openssl x509 -noout -subject
+```
+
+and take the `OU=` value (not the ID in parentheses after the name).
+The build fails with a message if the team is missing.
 
 ## Build
 
@@ -92,10 +110,14 @@ First launch:
 
 ## Change identity
 
-The team ID `4FMS9MCK4C` and bundle prefix `com.cbrill.mtpfinder` appear
-in `project.yml`, `Sources/MTPShared/MTPProtocol.swift` and
+The team ID comes from `Config/Local.xcconfig` (see Prepare). Entitlements
+use `$(TeamIdentifierPrefix)`, `Scripts/embed-libs.sh` fills it into the
+helper's launch plist, and the code reads it from its own signature.
+
+The bundle prefix `com.cbrill.mtpfinder` appears in `project.yml`,
+`Sources/MTPShared/MTPProtocol.swift` and
 `Resources/com.cbrill.mtpfinder.helper.plist`. Change all three. The app
-group and Mach service name derive from them.
+group and Mach service name derive from it.
 
 ## Limitations
 

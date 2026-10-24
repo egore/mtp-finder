@@ -7,3 +7,4 @@ AndroidFileTransfer.xcodeproj/
 App/Info.plist
 Extension/Info.plist
 *.entitlements
+Config/Local.xcconfig

@@ -1,4 +1,5 @@
 import Foundation
+import Security
 
 public enum MTPRequest: Codable, Sendable {
     case devices
@@ -40,7 +41,20 @@ public enum MTPResponse: Codable, Sendable {
 }
 
 public enum MTPService {
-    public static let teamID = "4FMS9MCK4C"
+    /// Read from our own signature so the team is configured in one place only.
+    /// Empty when unsigned, which makes `codeRequirement` match nothing.
+    public static let teamID: String = {
+        var code: SecCode?
+        var staticCode: SecStaticCode?
+        var info: CFDictionary?
+        guard SecCodeCopySelf([], &code) == errSecSuccess, let code,
+              SecCodeCopyStaticCode(code, [], &staticCode) == errSecSuccess, let staticCode,
+              SecCodeCopySigningInformation(staticCode, SecCSFlags(rawValue: kSecCSSigningInformation), &info) == errSecSuccess
+        else {
+            return ""
+        }
+        return (info as? [String: Any])?[kSecCodeInfoTeamIdentifier as String] as? String ?? ""
+    }()
     public static let groupID = "\(teamID).com.cbrill.mtpfinder"
     public static let machName = "\(groupID).helper"
     public static let helperPlist = "com.cbrill.mtpfinder.helper.plist"

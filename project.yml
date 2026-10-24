@@ -6,10 +6,12 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    DEVELOPMENT_TEAM: 4FMS9MCK4C
     CODE_SIGN_STYLE: Automatic
     MARKETING_VERSION: "0.1"
     CURRENT_PROJECT_VERSION: "1"
+configFiles:
+  Debug: Config/Signing.xcconfig
+  Release: Config/Signing.xcconfig
 packages:
   MTPPackage:
     path: .
@@ -26,7 +28,7 @@ targets:
     entitlements:
       path: App/App.entitlements
       properties:
-        com.apple.security.application-groups: ["4FMS9MCK4C.com.cbrill.mtpfinder"]
+        com.apple.security.application-groups: ["$(TeamIdentifierPrefix)com.cbrill.mtpfinder"]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.cbrill.mtpfinder
@@ -66,8 +68,8 @@ targets:
       path: Extension/Extension.entitlements
       properties:
         com.apple.security.app-sandbox: true
-        com.apple.security.application-groups: ["4FMS9MCK4C.com.cbrill.mtpfinder"]
-        com.apple.security.temporary-exception.mach-lookup.global-name: ["4FMS9MCK4C.com.cbrill.mtpfinder.helper"]
+        com.apple.security.application-groups: ["$(TeamIdentifierPrefix)com.cbrill.mtpfinder"]
+        com.apple.security.temporary-exception.mach-lookup.global-name: ["$(TeamIdentifierPrefix)com.cbrill.mtpfinder.helper"]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.cbrill.mtpfinder.provider
@@ -84,7 +86,7 @@ targets:
     entitlements:
       path: Helper/Helper.entitlements
       properties:
-        com.apple.security.application-groups: ["4FMS9MCK4C.com.cbrill.mtpfinder"]
+        com.apple.security.application-groups: ["$(TeamIdentifierPrefix)com.cbrill.mtpfinder"]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.cbrill.mtpfinder.helper

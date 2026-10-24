@@ -8,7 +8,7 @@
     <string>Contents/MacOS/MTPHelper</string>
     <key>MachServices</key>
     <dict>
-        <key>4FMS9MCK4C.com.cbrill.mtpfinder.helper</key>
+        <key>__TEAM_ID__.com.cbrill.mtpfinder.helper</key>
         <true/>
     </dict>
     <key>KeepAlive</key>
