@@ -98,7 +98,32 @@ First launch:
   `open ~/Applications/MTPFinder.app --args --reset`.
   Required after changing item metadata, as macOS caches it.
 - A locked phone yields an empty or failing folder. Unlock and reopen.
-- Opening Android File Transfer.app at the same time conflicts.
+- Opening Android File Transfer.app at the same time conflicts (see FAQ).
+
+## FAQ
+
+**The device is listed but its folder is empty or fails with "Device
+locked or not in File transfer mode".**
+Check the phone first: unlocked, USB mode **File transfer**, the access
+prompt allowed. If that is fine, another program probably has the phone.
+MTP allows one session at a time. A program that quits uncleanly (a
+crash, `kill`) leaves its session open and the phone refuses the next
+one. The helper drops and reopens its session once on this error, so
+retry after a few seconds. If it persists, quit the other program, run
+`pkill -x MTPHelper` (launchd restarts it) and replug the cable.
+
+**Which programs conflict?**
+Android File Transfer (the menu-bar icon shows a warning while it runs),
+other MTP tools such as `mtpls`, and anything else using libmtp or
+libusb on the same phone. `mtpls` refuses to run while `MTPHelper` is
+alive unless you pass `--force`. The helper keeps its session open once
+a request has used it, so quit MTPFinder and run `pkill -x MTPHelper`
+first. launchd restarts the helper without a session, then `--force`
+is safe.
+
+**How do I see what the helper is doing?**
+`log stream --predicate 'subsystem == "com.cbrill.mtpfinder"'` shows
+when it drops a stale session.
 
 ## Icons
 
