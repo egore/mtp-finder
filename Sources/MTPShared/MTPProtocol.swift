@@ -58,6 +58,11 @@ public enum MTPService {
     public static let groupID = "\(teamID).com.cbrill.mtpfinder"
     public static let machName = "\(groupID).helper"
     public static let helperPlist = "com.cbrill.mtpfinder.helper.plist"
+    public static let helperProcess = "MTPHelper"
+
+    /// MTP allows a single session. These also open the phone and, when they
+    /// exit uncleanly, leave a session behind that locks everyone else out.
+    public static let conflictingProcesses = ["Android File Transfer", "Android File Transfer Agent"]
 
     public static var codeRequirement: String {
         "anchor apple generic and certificate leaf[subject.OU] = \"\(teamID)\""

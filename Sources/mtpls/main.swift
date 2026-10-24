@@ -2,27 +2,60 @@ import Foundation
 @_exported import MTPShared
 import MTPKit
 
-let devices = try MTPDevices.detect()
-if devices.isEmpty {
-    print("No MTP devices. Unlock phone, set USB mode to File transfer.")
+func isRunning(_ name: String) -> Bool {
+    let task = Process()
+    task.executableURL = URL(fileURLWithPath: "/usr/bin/pgrep")
+    task.arguments = ["-x", name]
+    task.standardOutput = FileHandle.nullDevice
+    task.standardError = FileHandle.nullDevice
+    try? task.run()
+    task.waitUntilExit()
+    return task.terminationStatus == 0
+}
+
+func fail(_ message: String) -> Never {
+    FileHandle.standardError.write(Data((message + "\n").utf8))
     exit(1)
 }
 
-if CommandLine.arguments.dropFirst().first == "selftest" {
-    try selfTest(devices[0])
-    exit(0)
+var arguments = Array(CommandLine.arguments.dropFirst())
+let force = arguments.contains("--force")
+arguments.removeAll { $0 == "--force" }
+
+let holders = ([MTPService.helperProcess] + MTPService.conflictingProcesses).filter(isRunning)
+if !holders.isEmpty && !force {
+    fail("""
+    Running: \(holders.joined(separator: ", ")). These may hold the phone. MTP allows one \
+    session, so opening it here can lock the other program out until the phone is \
+    replugged. Quit them (for MTPFinder also run pkill -x MTPHelper, launchd restarts it \
+    without a session) and pass --force.
+    """)
 }
 
-for info in devices {
-    print("\(info.vendor) \(info.product) [\(info.id)]")
+do {
+    let devices = try MTPDevices.detect()
+    if devices.isEmpty {
+        fail("No MTP devices. Unlock phone, set USB mode to File transfer.")
+    }
 
-    let session = try MTPSession(info: info)
-    for storage in try session.storages() {
-        print("  \(storage.name) (\(storage.id)) free \(storage.freeSpace / 1_000_000) MB")
-        for entry in try session.list(storageID: storage.id) {
-            print("    \(entry.isFolder ? "d" : "-") \(entry.size)\t\(entry.name)")
+    if arguments.first == "selftest" {
+        try selfTest(devices[0])
+        exit(0)
+    }
+
+    for info in devices {
+        print("\(info.vendor) \(info.product) [\(info.id)]")
+
+        let session = try MTPSession(info: info)
+        for storage in try session.storages() {
+            print("  \(storage.name) (\(storage.id)) free \(storage.freeSpace / 1_000_000) MB")
+            for entry in try session.list(storageID: storage.id) {
+                print("    \(entry.isFolder ? "d" : "-") \(entry.size)\t\(entry.name)")
+            }
         }
     }
+} catch {
+    fail("\(error.localizedDescription)")
 }
 
 func selfTest(_ info: MTPDeviceInfo) throws {
